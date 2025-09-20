@@ -10,7 +10,7 @@ import {OracleLib} from "./libraries/OracleLib.sol";
 /**
  * @title DSCEngine
  * @author Axel Sanchez
- * The system is design to be as mionimal as possible, and have the tokens maintain a 1 token == $1 peg.
+ * The system is design to be as minimal as possible, and have the tokens maintain a 1 token == $1 peg.
  * This stablecoin has the properties:
  * - Exogenous Collateral
  * - Dollar Pegged
