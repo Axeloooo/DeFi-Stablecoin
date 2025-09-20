@@ -8,7 +8,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * @title DecentralizedStablecoin
  * @author Axel Sanchez
  *
- * This is the contract meant to be governed by DSCEngine. This contrcat is just the ERC20 implementation of our stablecoin system.
+ * This is the contract meant to be governed by DSCEngine. This contract is just the ERC20 implementation of our stablecoin system.
  * Collateral: Exogenous (ETH & BTC)
  * Minting: Algorithmic
  * Relative Stability: Pegged to USD
