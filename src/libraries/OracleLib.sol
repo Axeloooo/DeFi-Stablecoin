@@ -9,7 +9,7 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/Ag
  * @notice This library is used to check the Chainlink Oracle for stale data.
  *
  * If price is stale, the function will revert, and render the DSCEngine unusable - this by design
- * We want the DSCEngine to freese if prices become stale.
+ * We want the DSCEngine to freeze if prices become stale.
  *
  * So if the Chainlink Network explodes and you have a lot of money locked in the protocol...
  */
