@@ -100,7 +100,7 @@ contract DSCEngine is ReentrancyGuard {
 
     /**
      *
-     * @param tokenCollateralAddress TRhe address of the token to deposit as collateral
+     * @param tokenCollateralAddress The address of the token to deposit as collateral
      * @param amountCollateral The amount of collateral to deposit
      * @param amountDscToMint The amount of decentralized stablecoin to mint
      */
