@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: Apache-2.0
+pragma solidity ^0.8.19;
+
+import {Script} from "forge-std/Script.sol";
+import {DecentralizedStablecoin} from "../src/DecentralizedStablecoin.sol";
+import {DSCEngine} from "../src/DSCEngine.sol";
+import {HelperConfig} from "./HelperConfig.s.sol";
+
+contract DeployDSC is Script {
+    address[] public tokenAddresses;
+    address[] public priceFeedAddresses;
+
+    function run() external returns (DecentralizedStablecoin, DSCEngine, HelperConfig) {
+        HelperConfig config = new HelperConfig();
+
+        (address wethUsdPriceFeed, address wbtcUsdPriceFeed, address weth, address wbtc, uint256 deployKey) =
+            config.activeNetworkConfig();
+
+        tokenAddresses = [weth, wbtc];
+        priceFeedAddresses = [wethUsdPriceFeed, wbtcUsdPriceFeed];
+
+        vm.startBroadcast(deployKey);
+        DecentralizedStablecoin dsc = new DecentralizedStablecoin(vm.addr(deployKey));
+        DSCEngine engine = new DSCEngine(tokenAddresses, priceFeedAddresses, address(dsc));
+        dsc.transferOwnership(address(engine));
+        vm.stopBroadcast();
+        return (dsc, engine, config);
+    }
+}
