@@ -205,8 +205,6 @@ contract DSCEngine is ReentrancyGuard {
         }
     }
 
-    function getHealthFactor() external view {}
-
     //////////////////////////////////
     // Private & Internal Functions //
     //////////////////////////////////
@@ -316,5 +314,19 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
         (, int256 price,,,) = priceFeed.latestRoundData();
         return ((uint256(price) * ADDITIONAL_FEED_PRECISION) * amount) / PRECISION;
+    }
+
+    /**
+     *
+     * @param user The user address to get the information for
+     * @return totalDscMinted The total DSC minted by the user
+     * @return collateralValueInUsd The total DSC minted by the user and the collateral value in USD
+     */
+    function getAccountInformation(address user)
+        external
+        view
+        returns (uint256 totalDscMinted, uint256 collateralValueInUsd)
+    {
+        (totalDscMinted, collateralValueInUsd) = _getAccountInformation(user);
     }
 }
