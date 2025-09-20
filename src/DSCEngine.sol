@@ -20,7 +20,7 @@ import {OracleLib} from "./libraries/OracleLib.sol";
  *
  * Our DSC system should always be "overcollateralized". At no point, should the value of all collateral <= the $ backed value of all the DSC.
  *
- * @notice This contract is the core of the DSC System. It handles all the logix for mining and reediming DSC, as well as depositing & withdrawing collateral.
+ * @notice This contract is the core of the DSC System. It handles all the logic for minting and redeeming DSC, as well as depositing & withdrawing collateral.
  * @notice This contract is very loosely based on the MakerDAO DSS (DAI) system.
  */
 contract DSCEngine is ReentrancyGuard {
