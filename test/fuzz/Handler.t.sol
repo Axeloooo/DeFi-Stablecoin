@@ -88,15 +88,6 @@ contract Handler is Test {
         dsce.redeemCollateral(address(collateral), amountCollateral);
     }
 
-    // /**
-    //  *
-    //  * @param newPrice The new price to set the collateral to
-    //  */
-    // function updateColateralPrice(uint96 newPrice) public {
-    //     int256 newPriceInt = int256(uint256(newPrice));
-    //     ethUsdPriceFeed.updateAnswer(newPriceInt);
-    // }
-
     /**
      *
      * @param collateralSeed The seed used to determine the collateral type
