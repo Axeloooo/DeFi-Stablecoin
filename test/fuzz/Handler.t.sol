@@ -61,16 +61,21 @@ contract Handler is Test {
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = dsce.getAccountInformation(sender);
         uint256 maxDscForCollateral =
             (collateralValueInUsd * dsce.getLiquidationThreshold()) / dsce.getLiquidationPrecision();
-        if (maxDscForCollateral <= totalDscMinted) {
-            return;
-        }
-        amountDsc = bound(amountDsc, 0, maxDscForCollateral - totalDscMinted);
-        if (amountDsc == 0) {
-            return;
-        }
+        uint256 allowance = maxDscForCollateral > totalDscMinted ? maxDscForCollateral - totalDscMinted : 0;
+        // Roughly half of the attempts go past the user's allowance, to check the engine refuses them.
+        amountDsc = bound(amountDsc, 1, 2 * allowance + 1);
+
         vm.prank(sender);
-        dsce.mintDsc(amountDsc);
-        timesMintIsCalled++;
+        try dsce.mintDsc(amountDsc) {
+            timesMintIsCalled++;
+        } catch (bytes memory reason) {
+            // Minting past the collateral threshold must revert; any other revert is a real failure.
+            if (bytes4(reason) != DSCEngine.DSCEngine__BreaksHealthFactor.selector) {
+                assembly {
+                    revert(add(reason, 32), mload(reason))
+                }
+            }
+        }
     }
 
     /**
