@@ -45,6 +45,32 @@ contract Handler is Test {
         collateral.approve(address(dsce), amountCollateral);
         dsce.depositCollateral(address(collateral), amountCollateral);
         vm.stopPrank();
+        usersWithCollateralDeposited.push(msg.sender);
+    }
+
+    /**
+     *
+     * @param amountDsc The amount of DSC to mint
+     * @param addressSeed The seed used to pick a user that has deposited collateral
+     */
+    function mintDsc(uint256 amountDsc, uint256 addressSeed) public {
+        if (usersWithCollateralDeposited.length == 0) {
+            return;
+        }
+        address sender = usersWithCollateralDeposited[addressSeed % usersWithCollateralDeposited.length];
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = dsce.getAccountInformation(sender);
+        uint256 maxDscForCollateral =
+            (collateralValueInUsd * dsce.getLiquidationThreshold()) / dsce.getLiquidationPrecision();
+        if (maxDscForCollateral <= totalDscMinted) {
+            return;
+        }
+        amountDsc = bound(amountDsc, 0, maxDscForCollateral - totalDscMinted);
+        if (amountDsc == 0) {
+            return;
+        }
+        vm.prank(sender);
+        dsce.mintDsc(amountDsc);
+        timesMintIsCalled++;
     }
 
     /**
@@ -55,6 +81,22 @@ contract Handler is Test {
     function redeemCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
         uint256 maxCollateralToRedeem = dsce.getCollateralBalanceOfUser(msg.sender, address(collateral));
+
+        // Only redeem what keeps the user at or above the minimum health factor.
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = dsce.getAccountInformation(msg.sender);
+        if (totalDscMinted > 0) {
+            uint256 threshold = dsce.getLiquidationThreshold();
+            uint256 requiredCollateralInUsd =
+                (totalDscMinted * dsce.getLiquidationPrecision() + threshold - 1) / threshold;
+            if (collateralValueInUsd <= requiredCollateralInUsd) {
+                return;
+            }
+            uint256 excessCollateral =
+                dsce.getTokenAmountFromUsd(address(collateral), collateralValueInUsd - requiredCollateralInUsd);
+            if (excessCollateral < maxCollateralToRedeem) {
+                maxCollateralToRedeem = excessCollateral;
+            }
+        }
 
         amountCollateral = bound(amountCollateral, 0, maxCollateralToRedeem);
         if (amountCollateral == 0) {
@@ -70,8 +112,13 @@ contract Handler is Test {
      * @param amountDsc The amount of DSC to mint
      */
     function burnDsc(uint256 amountDsc) public {
-        // Must burn more than 0
-        amountDsc = bound(amountDsc, 0, dsc.balanceOf(msg.sender));
+        // Can only burn DSC that is both held and owed by the caller
+        (uint256 totalDscMinted,) = dsce.getAccountInformation(msg.sender);
+        uint256 maxDscToBurn = dsc.balanceOf(msg.sender);
+        if (totalDscMinted < maxDscToBurn) {
+            maxDscToBurn = totalDscMinted;
+        }
+        amountDsc = bound(amountDsc, 0, maxDscToBurn);
         if (amountDsc == 0) {
             return;
         }
