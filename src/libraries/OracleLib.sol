@@ -15,6 +15,7 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/Ag
  */
 library OracleLib {
     error OracleLib__StalePrice();
+    error OracleLib__InvalidPrice();
 
     uint256 private constant TIMEOUT = 3 hours;
 
@@ -29,6 +30,9 @@ library OracleLib {
         uint256 secondsSince = block.timestamp - updatedAt;
         if (secondsSince > TIMEOUT) {
             revert OracleLib__StalePrice();
+        }
+        if (answer <= 0) {
+            revert OracleLib__InvalidPrice();
         }
         return (roundId, answer, startedAt, updatedAt, answeredInRound);
     }

@@ -8,6 +8,7 @@ import {DSCEngine} from "../../src/DSCEngine.sol";
 import {ERC20Mock} from "../mock/ERC20Mock.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {MockV3Aggregator} from "../mock/MockV3Aggregator.sol";
+import {OracleLib} from "../../src/libraries/OracleLib.sol";
 
 contract DSCEngineTest is Test {
     DeployDSC deployer;
@@ -255,6 +256,16 @@ contract DSCEngineTest is Test {
         vm.expectRevert(DSCEngine.DSCEngine__HealthFactorIsOk.selector);
         dsce.liquidate(weth, USER, MAX_DSC_FOR_COLLATERAL);
         vm.stopPrank();
+    }
+
+    function testRevertsIfOraclePriceIsNotPositive() public {
+        MockV3Aggregator(ethUsdPriceFeed).updateAnswer(0);
+        vm.expectRevert(OracleLib.OracleLib__InvalidPrice.selector);
+        dsce.getUsdValue(weth, 1 ether);
+
+        MockV3Aggregator(ethUsdPriceFeed).updateAnswer(-1);
+        vm.expectRevert(OracleLib.OracleLib__InvalidPrice.selector);
+        dsce.getTokenAmountFromUsd(weth, 1 ether);
     }
 
     function testGetters() public view {
